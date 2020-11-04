@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)file:///C:/Users/BEST.BEST-PC/Desktop/tmpl.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"></head><body>
+
+<label>Enter Frame Height : </label>
+<input type="number" id="frameHeight">
+<label>Enter Frame Width : </label>
+<input type="number" id="frameWidth">
+<label>Diamond Length : </label>
+<input type="number" id="diamondMax">
+<button onclick="main(&#39;max&#39;)">Draw </button>
+<br>
+<canvas width="3000" height="2500"></canvas>
+<script>
+    let canvas = document.querySelector("canvas")
+    let cx = document.querySelector("canvas").getContext("2d");
+
+    function main(typeOfDraw) {
+        //get Inputs
+        let frameWidth = document.getElementById("frameWidth").value;
+        let frameHeight = document.getElementById("frameHeight").value;
+//        let diamondMin = document.getElementById("diamondMin").value;
+        let diamondMax = document.getElementById("diamondMax").value;
+
+
+        //Calculations by maximum Diamond Length
+        let maximumDiag = Math.sqrt(diamondMax * diamondMax * 2)
+        let numOfVerticalDiamonds = Math.round(frameHeight / maximumDiag)
+        let numOfHorizontalDiamonds = Math.round(frameWidth / maximumDiag)
+        let verticalDiag = parseFloat(frameHeight) / parseFloat(numOfVerticalDiamonds)
+        let horizontalDiag = parseFloat(frameWidth) / parseFloat(numOfHorizontalDiamonds)
+        if (typeOfDraw === 'max')
+            draw(
+                parseInt(frameWidth),
+                parseInt(frameHeight),
+                verticalDiag,
+                numOfVerticalDiamonds - 1,
+                horizontalDiag,
+                numOfHorizontalDiamonds - 1)
+        else {
+
+        }
+
+    }
+
+
+    function draw(originalFrameWidth, originalFrameHeight, originalVerticalDiag, verticalIntersects, originalHorizontalDiag, horizontalIntersects) {
+
+        let scale = Math.min(1000 / Math.max(originalFrameWidth, originalFrameHeight),1)
+     //   console.log(scale)
+        let frameWidth = originalFrameWidth * scale;
+        let frameHeight = originalFrameHeight * scale;
+        let verticalDiag = originalVerticalDiag * scale;
+        let horizontalDiag = originalHorizontalDiag * scale;
+
+        cx.lineWidth = 3
+        cx.clearRect(0, 0, canvas.width, canvas.height);   //////////////////////////////////
+        let margin = 50;
+        cx.strokeStyle = "black";
+        cx.rect(margin, margin, frameWidth, frameHeight);
+        cx.stroke();
+        let numOfLines = verticalIntersects + horizontalIntersects + 1
+
+        // Grid
+        for (let i = 1; i <= numOfLines; i++) {
+            let firstPointX = (verticalIntersects >= i) ? 0 : (horizontalDiag * (i - verticalIntersects - 1))
+            let firstPointY = (verticalIntersects >= i) ? (frameHeight - verticalDiag * i) : 0
+            let secondPointX = (horizontalIntersects >= i) ? (horizontalDiag * i) : frameWidth
+            let secondPointY = (horizontalIntersects >= i) ? frameHeight : frameHeight - (verticalDiag * ((i - horizontalIntersects - 1)))
+            drawLine(firstPointX, firstPointY, secondPointX, secondPointY, margin, "#000000")
+            drawLine(frameWidth - firstPointX, firstPointY, frameWidth - secondPointX, secondPointY, margin, "#000000")
+        }
+
+
+        let lineDistance = Math.max(frameWidth, frameHeight) * 0.05
+        // Down Red Lines
+        drawLine(0, frameHeight + lineDistance, frameWidth, frameHeight + lineDistance, margin, "#FF0000")
+        drawLine(frameWidth, frameHeight + lineDistance * 0.5, frameWidth, frameHeight + lineDistance * 1.5, margin, "#FF0000")
+        drawLine(0, frameHeight + lineDistance * 0.5, 0, frameHeight + lineDistance * 1.5, margin, "#FF0000")
+        drawArrow(0, frameHeight + lineDistance, 20, 5, 'left', margin)
+        drawArrow(frameWidth, frameHeight + lineDistance, 20, 5, 'right', margin)
+
+
+        // Right Red Lines
+        drawLine(frameWidth + lineDistance, 0, frameWidth + lineDistance, frameHeight*0.4, margin, "#FF0000")
+        drawLine(frameWidth + lineDistance, frameHeight*0.55 , frameWidth + lineDistance, frameHeight , margin, "#FF0000")
+        drawLine(frameWidth + lineDistance * 0.5, frameHeight, frameWidth + lineDistance * 1.5, frameHeight, margin, "#FF0000")
+        drawLine(frameWidth + lineDistance * 0.5, 0, frameWidth + lineDistance * 1.5, 0, margin, "#FF0000")
+        drawArrow(frameWidth + lineDistance, 0, 5, 20, 'up', margin)
+        drawArrow(frameWidth + lineDistance, frameHeight, 5, 20, 'down', margin)
+
+        // FONT Settings
+        cx.font = Math.max(frameWidth, frameHeight) / 28 + "px  Georgia";
+        cx.fillStyle = "#FF0000";
+        cx.fillText(originalFrameWidth, frameWidth / 2 - cx.measureText(parseInt(frameWidth) + "").width / 2 + margin, frameHeight + lineDistance * 0.8 + margin)
+        cx.fillText(originalFrameHeight, frameWidth + lineDistance - cx.measureText(parseInt(frameHeight) + "").width / 2 + margin, frameHeight / 2 + margin)
+
+
+        // Draw Diamond
+
+        let leftDist = frameWidth + 4 * lineDistance;
+        //let topDist = frameHeight / 2 - verticalDiag / 2;
+		let topDist = 100;
+		let scaleDiamond = 1000/verticalDiag/3
+		
+        let topY = topDist;
+        let topX = horizontalDiag / 2 * scaleDiamond + leftDist
+        let bottomY = verticalDiag * scaleDiamond + topDist;
+        let bottomX = horizontalDiag * scaleDiamond / 2 + leftDist
+        let leftY = verticalDiag * scaleDiamond / 2 + topDist;
+        let leftX = leftDist;
+        let rightY = verticalDiag * scaleDiamond / 2 + topDist;
+        let rightX = horizontalDiag * scaleDiamond + leftDist
+
+
+        cx.strokeStyle = "black";
+        drawLine(topX, topY, leftX, leftY, margin)
+        drawLine(topX, topY, rightX, rightY, margin)
+        drawLine(bottomX, bottomY, leftX, leftY, margin)
+        drawLine(bottomX, bottomY, rightX, rightY, margin)
+
+
+        cx.strokeStyle = "red";
+        drawLine(leftX, leftY, leftX, leftY + verticalDiag * scaleDiamond * 0.9, margin)
+        drawLine(rightX, rightY, rightX, rightY + verticalDiag * scaleDiamond * 0.9, margin)
+        drawLine(leftX, leftY + verticalDiag * scaleDiamond * 4 / 5, rightX, rightY + verticalDiag * scaleDiamond * 4 / 5, margin)
+        drawArrow(leftX, leftY + verticalDiag * scaleDiamond * 4 / 5, 20, 5, 'left', margin)
+        drawArrow(rightX, rightY + verticalDiag * scaleDiamond * 4 / 5, 20, 5, 'right', margin)
+
+
+        drawLine(topX, topY, topX + horizontalDiag * scaleDiamond * 0.9, topY, margin)
+        drawLine(bottomX, bottomY, bottomX + horizontalDiag * scaleDiamond * 0.9, bottomY, margin)
+        drawLine(topX + horizontalDiag * scaleDiamond * 0.8, topY, bottomX + horizontalDiag * scaleDiamond * 0.8, topY + verticalDiag * scaleDiamond * 0.35 , margin)
+        drawLine(topX + horizontalDiag * scaleDiamond * 0.8, topY + verticalDiag * scaleDiamond * 0.55, bottomX + horizontalDiag * scaleDiamond * 0.8, bottomY , margin)
+        drawArrow(topX + horizontalDiag * scaleDiamond * 0.8, topY, 5, 20, 'up', margin)
+        drawArrow(bottomX + horizontalDiag * scaleDiamond * 0.8, bottomY, 5, 20, 'down', margin)
+
+        let diamondLength = "L = " + Math.round(Math.sqrt((originalHorizontalDiag / 2) * (originalHorizontalDiag / 2)
+            + (originalVerticalDiag / 2) * (originalVerticalDiag / 2)))
+
+
+        cx.fillStyle = "#FF0000";
+        cx.fillText(parseInt(originalHorizontalDiag), bottomX - cx.measureText(parseInt(frameWidth) + "").width / 2 + margin, rightY + verticalDiag * scaleDiamond * 0.75 + margin)
+        cx.fillText(parseInt(originalVerticalDiag), topX + horizontalDiag * scaleDiamond * 0.8 - cx.measureText(parseInt(verticalDiag) + "").width / 2 + margin, rightY + margin)
+        cx.fillText(diamondLength, topX - cx.measureText(diamondLength).width / 2 + margin, topY + verticalDiag * scaleDiamond * 0.8)
+
+		//Legend table
+		
+		
+		//cx.strokeStyle = "black";
+		//drawLine(topX, 1200, topX, 1500, margin)
+        //drawLine(topX + 800, 1200, topx +800, 1500, margin)
+		//cx.fillStyle = "#FF0000";
+		//cx.fillText(parseInt(originalHorizontalDiag), bottomX - cx.measureText(parseInt(frameWidth) + "").width / 2 + margin, rightY + verticalDiag * scaleDiamond * 0.75 + margin)
+		//cx.fillText(parseInt(originalVerticalDiag), topX + horizontalDiag * scaleDiamond * 0.8 - cx.measureText(parseInt(verticalDiag) + "").width / 2 + margin, rightY + margin)
+		//cx.fillText(diamondLength, topX - cx.measureText(diamondLength).width / 2 + margin, topY + verticalDiag * scaleDiamond * 0.8)
+
+
+
+
+
+		function drawLine(x1, y1, x2, y2, margin, color) {
+			cx.strokeStyle = color;
+			cx.beginPath();
+			cx.moveTo(x1 + margin, y1 + margin);
+			cx.lineTo(x2 + margin, y2 + margin);
+			cx.stroke();
+		}
+
+		function canvas_arrow(context, fromx, fromy, tox, toy) {
+			var headlen = 10; // length of head in pixels
+			var dx = tox - fromx;
+			var dy = toy - fromy;
+			var angle = Math.atan2(dy, dx);
+			context.moveTo(fromx, fromy);
+			context.lineTo(tox, toy);
+			context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+			context.moveTo(tox, toy);
+			context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+		}
+
+		function drawArrow(x, y, arrowLength, arrowWidth, dir, margin) {
+			cx.beginPath()
+			cx.strokeStyle = "red"
+			cx.fillStyle = "red"
+			cx.moveTo(x + margin, y + margin)
+			switch (dir) {
+				case 'left' :
+					cx.lineTo(x + arrowLength + margin, y + arrowWidth + margin)
+					cx.lineTo(x + arrowLength + margin, y - arrowWidth + margin)
+					cx.lineTo(x + margin, y + margin)
+					cx.stroke()
+					cx.fill();
+					break;
+				case 'right' :
+					cx.lineTo(x - arrowLength + margin, y + arrowWidth + margin)
+					cx.lineTo(x - arrowLength + margin, y - arrowWidth + margin)
+					cx.lineTo(x + margin, y + margin)
+					cx.stroke()
+					cx.fill();
+					break;
+				case 'up' :
+					cx.lineTo(x - arrowLength + margin, y + arrowWidth + margin)
+					cx.lineTo(x + arrowLength + margin, y + arrowWidth + margin)
+					cx.lineTo(x + margin, y + margin)
+					cx.stroke()
+					cx.fill();
+					break;
+				case 'down' :
+					cx.lineTo(x - arrowLength + margin, y - arrowWidth + margin)
+					cx.lineTo(x + arrowLength + margin, y - arrowWidth + margin)
+					cx.lineTo(x + margin, y + margin)
+					cx.stroke()
+					cx.fill();
+					break;
+
+			}
+
+		}
+    }
+</script>
+
+
+</body></html>
